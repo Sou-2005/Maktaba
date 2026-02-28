@@ -4,9 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -14,9 +12,6 @@ import androidx.compose.ui.unit.dp
 import com.ElOuedUniv.maktaba.data.model.Book
 import com.ElOuedUniv.maktaba.presentation.viewmodel.BookViewModel
 
-/**
- * Main screen displaying the list of books
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookListScreen(
@@ -36,6 +31,7 @@ fun BookListScreen(
             )
         }
     ) { paddingValues ->
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -61,82 +57,71 @@ fun BookListScreen(
     }
 }
 
-/**
- * Composable for displaying a list of books
- */
 @Composable
 fun BookList(
     books: List<Book>,
     modifier: Modifier = Modifier
 ) {
-    LazyColumn(
-        modifier = modifier,
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        items(books) { book ->
-            BookItem(book = book)
+    val totalPages = books.sumOf { it.nbPages }
+
+    Column(modifier = modifier) {
+
+        // 🔢 Counters
+        Text(
+            text = "Total Books: ${books.size}",
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(start = 16.dp, top = 16.dp)
+        )
+
+        Text(
+            text = "Total Pages: $totalPages",
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.padding(start = 16.dp, bottom = 8.dp)
+        )
+
+        // 📚 Books List
+        LazyColumn(
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            items(books) { book ->
+                BookItem(book = book)
+            }
         }
     }
 }
 
-/**
- * Composable for displaying a single book item
- */
 @Composable
 fun BookItem(book: Book) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            Text(
-                text = book.title,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
-            )
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Column {
-                    Text(
-                        text = "ISBN:",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = if (book.isbn.isEmpty()) "Not set" else book.isbn,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
-                
-                Column(horizontalAlignment = Alignment.End) {
-                    Text(
-                        text = "Pages:",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = if (book.nbPages == 0) "Not set" else "${book.nbPages}",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
+        Row(modifier = Modifier.padding(12.dp)) {
+
+            // صورة الغلاف (اختياري إذا ضفتِ imageRes)
+            /*Image(
+                painter = painterResource(id = book.imageRes),
+                contentDescription = book.title,
+                modifier = Modifier
+                    .size(70.dp)
+                    .padding(end = 12.dp)
+            )*/
+
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = book.title,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(text = "ISBN: ${book.isbn}")
+                Text(text = "Pages: ${book.nbPages}")
             }
         }
     }
 }
 
-/**
- * Composable for displaying empty state message
- */
 @Composable
 fun EmptyBooksMessage(modifier: Modifier = Modifier) {
     Column(
