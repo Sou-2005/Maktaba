@@ -59,10 +59,20 @@ fun CategoryListView(
                         modifier = Modifier.align(Alignment.Center)
                     )
                 } else {
-                    CategoryList(
-                        categories = categories,
-                        modifier = Modifier.fillMaxSize()
-                    )
+                    Column(modifier = Modifier.fillMaxSize()) {
+
+                        // ✅ Bonus 1: عدد التصنيفات
+                        Text(
+                            text = "Total Categories: ${categories.size}",
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.padding(16.dp)
+                        )
+
+                        CategoryList(
+                            categories = categories,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
                 }
             }
         }
@@ -97,14 +107,21 @@ fun CategoryItem(category: Category) {
                 .padding(16.dp)
         ) {
             Text(
-                text = "Category Item",
+                text = category.name,
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = category.description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
 }
-
 @Composable
 fun EmptyCategoriesMessage(modifier: Modifier = Modifier) {
     Column(
