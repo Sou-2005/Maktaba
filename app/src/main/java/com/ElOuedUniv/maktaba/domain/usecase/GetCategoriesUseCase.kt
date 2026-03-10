@@ -6,7 +6,6 @@ import com.ElOuedUniv.maktaba.data.repository.CategoryRepository
 class GetCategoriesUseCase(
     private val categoryRepository: CategoryRepository
 ) {
-    // ✅ Bonus 3: ترتيب التصنيفات أبجديًا حسب الاسم
     operator fun invoke(): List<Category> {
         return categoryRepository
             .getAllCategories()

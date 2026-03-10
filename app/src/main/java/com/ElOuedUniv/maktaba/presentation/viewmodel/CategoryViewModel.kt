@@ -34,7 +34,6 @@ class CategoryViewModel(
         }
     }
 
-    // ✅ Bonus 2: البحث عن تصنيف بواسطة ID
     fun getCategoryById(id: String): Category? {
         return categories.value.find { it.id == id }
     }

@@ -61,7 +61,6 @@ fun CategoryListView(
                 } else {
                     Column(modifier = Modifier.fillMaxSize()) {
 
-                        // ✅ Bonus 1: عدد التصنيفات
                         Text(
                             text = "Total Categories: ${categories.size}",
                             style = MaterialTheme.typography.titleMedium,
