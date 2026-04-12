@@ -1,9 +1,10 @@
-package com.ElOuedUniv.maktaba.presentation.view
+package com.ElOuedUniv.maktaba.presentation.book
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -13,17 +14,30 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.ElOuedUniv.maktaba.data.model.Book
-import com.ElOuedUniv.maktaba.presentation.viewmodel.BookViewModel
+import com.ElOuedUniv.maktaba.presentation.book.BookViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookListView(
-    viewModel: BookViewModel,
-    onCategoriesClick: () -> Unit = {}
+    onCategoriesClick: () -> Unit = {},
+    viewModel: BookViewModel = hiltViewModel()
 ) {
     val books by viewModel.books.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    
+    // TODO: Exercise 3 - Use a single delegated state from the ViewModel
+    // val uiState by viewModel.uiState.collectAsState()
+
+    if (/* TODO: uiState.isAddingBook */ false) {
+        AddBookDialog(
+            onDismiss = { /* TODO: viewModel.onAction(BookUiAction.OnDismissAddBook) */ },
+            onConfirm = { title, isbn, pages ->
+                /* TODO: viewModel.onAction(BookUiAction.OnAddBookConfirm(title, isbn, pages)) */
+            }
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -42,6 +56,16 @@ fun BookListView(
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             )
+        },
+        floatingActionButton = {
+            FloatingActionButton(onClick = { 
+                /* TODO: Exercise 3 - viewModel.onAction(BookUiAction.OnAddBookClick) */
+            }) {
+                Icon(
+                    imageVector = androidx.compose.material.icons.Icons.Default.Add,
+                    contentDescription = "Add Book"
+                )
+            }
         }
     ) { paddingValues ->
         Box(
