@@ -11,11 +11,36 @@ import javax.inject.Inject
 class BookRepositoryImpl @Inject constructor() : BookRepository {
 
     private val _booksList = mutableListOf(
-        Book(isbn = "11111", title = "Clean Code", nbPages = 10),
-        Book(isbn = "22222", title = "The Pragmatic Programmer", nbPages = 0),
-        Book(isbn = "33333", title = "Design Patterns", nbPages = 0),
-        Book(isbn = "44444", title = "Refactoring", nbPages = 0),
-        Book(isbn = "55555", title = "Head First Design Patterns", nbPages = 0)
+        Book(
+            isbn = "9780132350884", 
+            title = "Clean Code", 
+            nbPages = 464,
+            imageUrl = "https://covers.openlibrary.org/b/isbn/9780132350884-L.jpg"
+        ),
+        Book(
+            isbn = "9780135957059", 
+            title = "The Pragmatic Programmer", 
+            nbPages = 352,
+            imageUrl = "https://covers.openlibrary.org/b/isbn/9780135957059-L.jpg"
+        ),
+        Book(
+            isbn = "9780201633610", 
+            title = "Design Patterns", 
+            nbPages = 395,
+            imageUrl = "https://covers.openlibrary.org/b/isbn/9780201633610-L.jpg"
+        ),
+        Book(
+            isbn = "9780134757599", 
+            title = "Refactoring", 
+            nbPages = 448,
+            imageUrl = "https://covers.openlibrary.org/b/isbn/9780134757599-L.jpg"
+        ),
+        Book(
+            isbn = "9781492078005", 
+            title = "Head First Design Patterns", 
+            nbPages = 672,
+            imageUrl = "https://covers.openlibrary.org/b/isbn/9781492078005-L.jpg"
+        )
     )
 
     private val booksFlow = MutableSharedFlow<List<Book>>(replay = 1).apply {
@@ -23,7 +48,7 @@ class BookRepositoryImpl @Inject constructor() : BookRepository {
     }
     
     override fun getAllBooks(): Flow<List<Book>> = flow {
-        delay(2000) // Simulate delay
+        delay(1000) // Simulate delay
         emitAll(booksFlow)
     }
 

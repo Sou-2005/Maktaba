@@ -1,7 +1,5 @@
 # TP 4: Advanced Jetpack Compose UI & Validation
-
 ![Design Sketch](sketch.png)
-
 ## Objective
 In this TP, you will transform the "light" UI implementation into a premium, interactive experience based on the provided design sketch. You will also learn to handle modern navigation, update data models, and implement advanced input validation.
 
