@@ -7,7 +7,9 @@ interface BookRepository {
     
     fun getAllBooks(): Flow<List<Book>>
     
-    fun getBookByIsbn(isbn: String): Book?
+    suspend fun getBookByIsbn(isbn: String): Book?
 
-    fun addBook(book: Book)
+    suspend fun addBook(book: Book, imageBytes: ByteArray? = null)
+
+    suspend fun deleteBook(isbn: String)
 }

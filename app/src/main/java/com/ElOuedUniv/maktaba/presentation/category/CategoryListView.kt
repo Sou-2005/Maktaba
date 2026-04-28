@@ -6,19 +6,19 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ElOuedUniv.maktaba.data.model.Category
-import com.ElOuedUniv.maktaba.presentation.category.CategoryViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -28,6 +28,7 @@ fun CategoryListView(
 ) {
     val categories by viewModel.categories.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState()
 
     Scaffold(
         topBar = {
@@ -65,6 +66,24 @@ fun CategoryListView(
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center)
                 )
+            } else if (errorMessage != null) {
+                Column(
+                    modifier = Modifier.align(Alignment.Center).padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text("⚠️", fontSize = 48.sp)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = errorMessage!!,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.error,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Button(onClick = { viewModel.refreshCategories() }) {
+                        Text("Retry")
+                    }
+                }
             } else {
                 if (categories.isEmpty()) {
                     EmptyCategoriesMessage(
@@ -120,7 +139,7 @@ fun CategoryItem(category: Category) {
                 color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
             ) {
                 Icon(
-                    painter = painterResource(id = category.iconRes),
+                    imageVector = getCategoryIcon(category.name),
                     contentDescription = null,
                     modifier = Modifier
                         .padding(16.dp)
@@ -155,27 +174,33 @@ fun CategoryItem(category: Category) {
     }
 }
 
+/**
+ * Maps the category name to a related Material Icon ImageVector.
+ */
+fun getCategoryIcon(name: String): ImageVector {
+    return when (name.lowercase()) {
+        "programming" -> Icons.Default.Code
+        "algorithms" -> Icons.Default.Functions
+        "databases" -> Icons.Default.Storage
+        "design" -> Icons.Default.Brush
+        "science" -> Icons.Default.Science
+        "mathematics" -> Icons.Default.Calculate
+        "history" -> Icons.Default.History
+        "literature" -> Icons.Default.MenuBook
+        else -> Icons.Default.Category
+    }
+}
+
 @Composable
 fun EmptyCategoriesMessage(modifier: Modifier = Modifier) {
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = "📂",
-            style = MaterialTheme.typography.displayLarge,
-        )
+        Text(text = "📂", style = MaterialTheme.typography.displayLarge)
         Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = "No categories available",
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+        Text(text = "No categories available", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = "Complete the TODO exercises in TP2",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+        Text(text = "Check your Supabase table", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }

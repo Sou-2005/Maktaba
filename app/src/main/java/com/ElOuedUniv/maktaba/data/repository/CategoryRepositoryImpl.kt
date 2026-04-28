@@ -12,19 +12,19 @@ class CategoryRepositoryImpl @Inject constructor() : CategoryRepository {
 
     private val _categoriesList = listOf(
         Category(
-            id = "1",
+            id = 1,
             name = "Programming",
             description = "Books about software development and coding",
             iconRes = android.R.drawable.ic_menu_preferences
         ),
         Category(
-            id = "2",
+            id = 2,
             name = "Algorithms",
             description = "Books about algorithms and data structures",
             iconRes = android.R.drawable.ic_menu_compass
         ),
         Category(
-            id = "3",
+            id = 3,
             name = "Databases",
             description = "Books about database design and management",
             iconRes = android.R.drawable.ic_menu_save
@@ -40,7 +40,8 @@ class CategoryRepositoryImpl @Inject constructor() : CategoryRepository {
         emitAll(categoriesFlow)
     }
 
-    override fun getCategoryById(id: String): Category? {
+    override suspend fun getCategoryById(id: Int): Category? {
+        delay(500)
         return _categoriesList.find { it.id == id }
     }
 }

@@ -9,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -32,6 +33,11 @@ fun BookListView(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
+    // Refresh books every time this screen is displayed
+    LaunchedEffect(Unit) {
+        viewModel.loadBooks()
+    }
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -45,8 +51,13 @@ fun BookListView(
                     ) 
                 },
                 actions = {
-                    IconButton(onClick = {}) {
-                        Icon(Icons.Default.GridView, contentDescription = "Grid View")
+                    IconButton(onClick = { viewModel.onAction(BookUiAction.ToggleGridColumns) }) {
+                        val icon = when (uiState.gridColumnCount) {
+                            1 -> Icons.Default.ViewStream
+                            2 -> Icons.Default.GridView
+                            else -> Icons.Default.ViewModule
+                        }
+                        Icon(icon, contentDescription = "Toggle Layout")
                     }
                     IconButton(onClick = onCategoriesClick) {
                         Icon(Icons.Default.List, contentDescription = "Categories")
@@ -74,18 +85,34 @@ fun BookListView(
                 .padding(paddingValues)
                 .background(MaterialTheme.colorScheme.background)
         ) {
-            if (uiState.isLoading) {
+            if (uiState.isLoading && uiState.books.isEmpty()) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             } else {
-                if (uiState.books.isEmpty()) {
+                if (uiState.books.isEmpty() && !uiState.isLoading) {
                     EmptyBooksMessage(modifier = Modifier.align(Alignment.Center))
                 } else {
                     BookGrid(
                         books = uiState.books,
+                        columnCount = uiState.gridColumnCount,
                         onBookClick = onBookClick,
                         modifier = Modifier.fillMaxSize()
                     )
+                    
+                    // Show a small loader if we're refreshing existing data
+                    if (uiState.isLoading) {
+                        LinearProgressIndicator(
+                            modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter)
+                        )
+                    }
                 }
+            }
+            
+            if (uiState.errorMessage != null) {
+                Text(
+                    text = uiState.errorMessage!!,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.align(Alignment.BottomCenter).padding(16.dp)
+                )
             }
         }
     }
@@ -94,28 +121,37 @@ fun BookListView(
 @Composable
 fun BookGrid(
     books: List<Book>,
+    columnCount: Int,
     onBookClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
+        columns = GridCells.Fixed(columnCount),
         modifier = modifier,
         contentPadding = PaddingValues(16.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         items(books) { book ->
-            BookCard(book = book, onClick = { onBookClick(book.isbn) })
+            BookCard(
+                book = book, 
+                onClick = { onBookClick(book.isbn) },
+                compact = columnCount > 2
+            )
         }
     }
 }
 
 @Composable
-fun BookCard(book: Book, onClick: () -> Unit) {
+fun BookCard(
+    book: Book, 
+    onClick: () -> Unit,
+    compact: Boolean = false
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(320.dp),
+            .height(if (compact) 240.dp else 320.dp),
         onClick = onClick,
         shape = MaterialTheme.shapes.large,
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
@@ -140,7 +176,7 @@ fun BookCard(book: Book, onClick: () -> Unit) {
                     Icon(
                         imageVector = Icons.Default.Bookmark,
                         contentDescription = null,
-                        modifier = Modifier.size(48.dp).align(Alignment.Center),
+                        modifier = Modifier.size(if (compact) 32.dp else 48.dp).align(Alignment.Center),
                         tint = MaterialTheme.colorScheme.onSecondaryContainer
                     )
                 }
@@ -149,61 +185,63 @@ fun BookCard(book: Book, onClick: () -> Unit) {
             // Book Details
             Column(
                 modifier = Modifier
-                    .padding(12.dp)
+                    .padding(if (compact) 8.dp else 12.dp)
                     .fillMaxWidth()
             ) {
                 Text(
                     text = book.title,
-                    style = MaterialTheme.typography.titleMedium,
+                    style = if (compact) MaterialTheme.typography.titleSmall else MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     maxLines = 2,
                     minLines = 2
                 )
                 
-                Spacer(modifier = Modifier.height(8.dp))
-                
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Bottom
-                ) {
-                    Column {
-                        Text(
-                            text = "ISBN",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Text(
-                            text = book.isbn.take(5) + "...",
-                            style = MaterialTheme.typography.bodySmall,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
+                if (!compact) {
+                    Spacer(modifier = Modifier.height(8.dp))
                     
-                    val statusText = if (book.nbPages > 0) "Reading" else "Finished"
-                    val statusIcon = if (book.nbPages > 0) Icons.Default.Bookmark else Icons.Default.CheckCircle
-                    val statusColor = if (book.nbPages > 0) MaterialTheme.colorScheme.primary else Color(0xFF4CAF50)
-
-                    Column(horizontalAlignment = Alignment.End) {
-                        Text(
-                            text = "Status",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = statusIcon,
-                                contentDescription = null,
-                                modifier = Modifier.size(12.dp),
-                                tint = statusColor
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.Bottom
+                    ) {
+                        Column {
                             Text(
-                                text = statusText,
-                                style = MaterialTheme.typography.bodySmall,
-                                fontWeight = FontWeight.Bold,
-                                color = statusColor
+                                text = "ISBN",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
+                            Text(
+                                text = book.isbn.take(5) + "...",
+                                style = MaterialTheme.typography.bodySmall,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                        
+                        val statusText = if (book.nbPages > 0) "Reading" else "Finished"
+                        val statusIcon = if (book.nbPages > 0) Icons.Default.Bookmark else Icons.Default.CheckCircle
+                        val statusColor = if (book.nbPages > 0) MaterialTheme.colorScheme.primary else Color(0xFF4CAF50)
+
+                        Column(horizontalAlignment = Alignment.End) {
+                            Text(
+                                text = "Status",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = statusIcon,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(12.dp),
+                                    tint = statusColor
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = statusText,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = statusColor
+                                )
+                            }
                         }
                     }
                 }

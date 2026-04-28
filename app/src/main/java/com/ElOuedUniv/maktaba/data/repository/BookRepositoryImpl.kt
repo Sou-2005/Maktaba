@@ -27,12 +27,20 @@ class BookRepositoryImpl @Inject constructor() : BookRepository {
         emitAll(booksFlow)
     }
 
-    override fun getBookByIsbn(isbn: String): Book? {
+    override suspend fun getBookByIsbn(isbn: String): Book? {
+        delay(500)
         return _booksList.find { it.isbn == isbn }
     }
 
-    override fun addBook(book: Book) {
+    override suspend fun addBook(book: Book, imageBytes: ByteArray?) {
+        delay(1000)
         _booksList.add(book)
+        booksFlow.tryEmit(_booksList.toList())
+    }
+
+    override suspend fun deleteBook(isbn: String) {
+        delay(500)
+        _booksList.removeAll { it.isbn == isbn }
         booksFlow.tryEmit(_booksList.toList())
     }
 }
